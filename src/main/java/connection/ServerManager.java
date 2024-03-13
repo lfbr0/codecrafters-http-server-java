@@ -1,5 +1,6 @@
 package connection;
 
+import handler.ClientHandler;
 import log.ApplicationLogger;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.net.Socket;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -19,7 +21,7 @@ public class ServerManager implements AutoCloseable {
 
     private final int port;
     private final ExecutorService taskpool;
-    private final List<Socket> clientSockets;
+    private final List<ClientHandler> clientHandlers;
 
     private ServerSocket serverSocket;
     private Future connectionListenerFuture;
@@ -28,7 +30,7 @@ public class ServerManager implements AutoCloseable {
         this.port = port;
         this.taskpool = taskpool;
         this.serverSocket = null;
-        this.clientSockets = Collections.synchronizedList(new LinkedList<>());
+        this.clientHandlers = Collections.synchronizedList(new LinkedList<>());
     }
 
     public void init() throws IOException, ExecutionException {
@@ -40,7 +42,9 @@ public class ServerManager implements AutoCloseable {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     logger.info("Got an incoming connection from " + clientSocket.getRemoteSocketAddress());
-                    clientSockets.add(clientSocket);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    clientHandlers.add(clientHandler);
+                    taskpool.submit(clientHandler);
                 } catch (IOException e) {
                     logger.error("Failed to accept client socket", e);
                 }
@@ -49,7 +53,7 @@ public class ServerManager implements AutoCloseable {
 
         try {
             connectionListenerFuture.get();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | CancellationException e) {
             logger.info("Got order to stop listening to incoming client connections...");
         }
     }
@@ -62,11 +66,11 @@ public class ServerManager implements AutoCloseable {
         }
 
         logger.info("Closing down client sockets...");
-        clientSockets.forEach(socket -> {
+        clientHandlers.forEach(handler -> {
             try {
-                socket.close();
+                handler.close();
             } catch (IOException e) {
-                logger.error("Failed to close client socket", e);
+                logger.error("Failed in closing handler", e);
             }
         });
 
