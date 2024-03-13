@@ -1,24 +1,29 @@
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import connection.ServerManager;
+import handler.MainShutdownHandler;
+import log.ApplicationLogger;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
-  public static void main(String[] args) {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    System.out.println("Logs from your program will appear here!");
 
-    // Uncomment this block to pass the first stage
-    //
-    // ServerSocket serverSocket = null;
-    // Socket clientSocket = null;
-    //
-    // try {
-    //   serverSocket = new ServerSocket(4221);
-    //   serverSocket.setReuseAddress(true);
-    //   clientSocket = serverSocket.accept(); // Wait for connection from client.
-    //   System.out.println("accepted new connection");
-    // } catch (IOException e) {
-    //   System.out.println("IOException: " + e.getMessage());
-    // }
-  }
+    public static int HTTP_DEFAULT_PORT = 4221;
+
+    private static final ApplicationLogger logger = ApplicationLogger.getInstance(Main.class);
+
+    public static void main(String[] args) {
+        logger.info("Starting HTTP server!");
+        try {
+            final ExecutorService threadpool = Executors.newFixedThreadPool(3);
+            ServerManager serverManager = new ServerManager(HTTP_DEFAULT_PORT, threadpool);
+
+            //Add callback in case of closing
+            Runtime.getRuntime().addShutdownHook(new MainShutdownHandler(serverManager, threadpool));
+
+            serverManager.init();
+        } catch (Exception e) {
+            logger.error("An error occured in the main proccess", e);
+        }
+    }
+
 }
