@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Starting HTTP server!");
         try {
-            final ExecutorService threadpool = Executors.newFixedThreadPool(3);
+            final ExecutorService threadpool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             ServerManager serverManager = new ServerManager(HTTP_DEFAULT_PORT, threadpool);
 
             //Add callback in case of closing
