@@ -6,6 +6,7 @@ import log.ApplicationLogger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 
 public class ServerManager implements AutoCloseable {
@@ -28,10 +29,14 @@ public class ServerManager implements AutoCloseable {
         serverSocket.setReuseAddress(true);
         logger.info("Listening for connections...");
         while (!serverSocket.isClosed()) {
-            Socket clientSocket = serverSocket.accept();
-            logger.info("Got connection -> " + clientSocket);
-            clientSocket.setKeepAlive(false);
-            taskpool.submit(new ClientHandler(clientSocket, directory));
+            try {
+                Socket clientSocket = serverSocket.accept();
+                logger.info("Got connection -> " + clientSocket);
+                clientSocket.setKeepAlive(false);
+                taskpool.submit(new ClientHandler(clientSocket, directory));
+            } catch (SocketException ex) {
+                logger.warn("Got socket exception -> " + ex.getMessage());
+            }
         }
     }
 
