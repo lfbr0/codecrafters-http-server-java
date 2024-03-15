@@ -7,12 +7,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ServerManager implements AutoCloseable {
+public class ServerManager {
 
     private final ApplicationLogger logger = ApplicationLogger.getInstance(ServerManager.class);
 
@@ -20,47 +18,41 @@ public class ServerManager implements AutoCloseable {
     private final ExecutorService taskpool;
     private ServerSocket serverSocket;
     private String directory;
-    private Set<String> activeConnectionsSet;
+    private AtomicBoolean closeFlag;
 
     public ServerManager(int port, ExecutorService taskpool) {
         this.port = port;
         this.taskpool = taskpool;
         this.serverSocket = null;
-        this.activeConnectionsSet = Collections.synchronizedSet(new HashSet<>());
-    }
-
-    public void run() throws IOException{
-        serverSocket = new ServerSocket(port);
-        serverSocket.setReuseAddress(true);
-        logger.info("Listening for connections...");
-        while (!serverSocket.isClosed()) {
-            try {
-                Socket clientSocket = serverSocket.accept();
-                String socketKey = clientSocket.getRemoteSocketAddress().toString();
-                logger.info("Checking if connection for socket key is unique -> " + socketKey);
-
-                if ( !activeConnectionsSet.contains(socketKey) ) {
-                    logger.info("Got connection -> " + clientSocket);
-                    clientSocket.setKeepAlive(false);
-                    taskpool.submit(new ClientHandler(clientSocket, directory));
-                    activeConnectionsSet.add(socketKey);
-                }
-            } catch (SocketException ex) {
-                logger.warn("Got socket exception -> " + ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (serverSocket != null && !serverSocket.isClosed()) {
-            logger.info("Closing server socket...");
-            serverSocket.close();
-        }
+        this.closeFlag = new AtomicBoolean(false);
     }
 
     public void setDirectory(String directory) {
         logger.info("Setting directory of server as " + directory);
         this.directory = directory;
     }
+
+    public void run() throws IOException {
+        serverSocket = new ServerSocket(port);
+        serverSocket.setReuseAddress(true);
+        logger.info("Listening for connections...");
+
+        while (!closeFlag.getAcquire()) {
+            Socket clientSocket = serverSocket.accept();
+            logger.info("Got connection -> " + clientSocket);
+            clientSocket.setKeepAlive(false);
+            taskpool.submit(new ClientHandler(clientSocket, directory));
+        }
+
+        if (!serverSocket.isClosed()) {
+            logger.info("Closing server socket...");
+            serverSocket.close();
+        }
+    }
+
+    public void close() throws Exception {
+        logger.info("Setting close flag to true...");
+        closeFlag.set(true);
+    }
+
 }
