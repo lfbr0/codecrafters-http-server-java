@@ -83,7 +83,7 @@ public class ClientHandler extends Thread {
             if (request.getDesiredPath().equalsIgnoreCase("/")) {
                 responseBuffer.append("HTTP/1.1 200 OK");
             } else {
-                responseBuffer.append("HTTP/1.1 400 Not Found");
+                responseBuffer.append("HTTP/1.1 404 Not Found");
             }
 
         }
