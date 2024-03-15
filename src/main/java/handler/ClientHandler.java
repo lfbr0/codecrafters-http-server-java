@@ -133,6 +133,9 @@ public class ClientHandler extends Thread {
                                                 for (byte b : fileBytes) responseBuffer.append((char) b);
                                             }, () -> responseBuffer.append(HttpUtils.HTTP_500_RESPONSE));
                                 }
+                                else {
+                                    responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
+                                }
                                 break;
                             case "POST":
                                 break;

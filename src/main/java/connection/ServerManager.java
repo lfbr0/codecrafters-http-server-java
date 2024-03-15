@@ -50,7 +50,7 @@ public class ServerManager {
         }
     }
 
-    public void close() throws Exception {
+    public void close() {
         logger.info("Setting close flag to true...");
         closeFlag.set(true);
     }
