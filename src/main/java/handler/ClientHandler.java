@@ -107,12 +107,21 @@ public class ClientHandler extends Thread {
                 if (request.getDesiredPath().startsWith("/files") && directory != null) {
                     String fileToCheck = request.getDesiredPath().substring("/files".length() + 1);
                     if (FileSystemUtils.fileExists(directory, fileToCheck)) {
-                        responseBuffer
-                                .append("HTTP/1.1 200 OK")
-                                .append(HttpUtils.HTTP_NEW_LINE)
-                                .append("Content-Type: application/octet-stream")
-                                .append(HttpUtils.HTTP_NEW_LINE);
-                        //TODO: read contents and append to buffer along with content length
+                        FileSystemUtils
+                                .getFileBytes(directory, fileToCheck)
+                                .ifPresentOrElse(fileBytes -> {
+                                    responseBuffer
+                                            .append("HTTP/1.1 200 OK")
+                                            .append(HttpUtils.HTTP_NEW_LINE)
+                                            .append("Content-Type: application/octet-stream")
+                                            .append(HttpUtils.HTTP_NEW_LINE)
+                                            .append("Content-Length: ").append(fileBytes.length)
+                                            .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE);
+
+                                    for (byte b : fileBytes) {
+                                        responseBuffer.append(b);
+                                    }
+                                }, () -> responseBuffer.append("HTTP/1.1 500 Internal Error"));
                     } else {
                         responseBuffer.append("HTTP/1.1 404 Not Found");
                     }

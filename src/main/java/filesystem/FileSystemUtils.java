@@ -2,8 +2,10 @@ package filesystem;
 
 import log.ApplicationLogger;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class FileSystemUtils {
 
@@ -20,10 +22,28 @@ public class FileSystemUtils {
             return false;
         }
 
-        logger.info("Checking if file " + fileToCheck + " exists in dir " + directory);
         Path path = Path.of(directory, fileToCheck);
-        logger.info("Path -> " + path);
+        logger.info("Checking if file " + path + " exists...");
         return Files.exists(path);
     }
 
+    public static Optional<byte[]> getFileBytes(String directory, String file) {
+        if (directory == null || directory.trim().isEmpty()) {
+            logger.warn("Directory is empty/null!");
+            return Optional.empty();
+        }
+
+        if (file == null || file.trim().isEmpty()) {
+            logger.warn("Cannot check if dir " + directory + " has file since filename is empty/null!");
+            return Optional.empty();
+        }
+
+        Path path = Path.of(directory, file);
+        try {
+            return Optional.of( Files.readAllBytes(path) );
+        } catch (IOException ex) {
+            logger.error("Failed to read file " + path + " bytes", ex);
+            return Optional.empty();
+        }
+    }
 }
