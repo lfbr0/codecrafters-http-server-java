@@ -20,7 +20,7 @@ public class Main {
             //Add callback in case of closing
             Runtime.getRuntime().addShutdownHook(new MainShutdownHandler(serverManager, threadpool));
 
-            serverManager.init();
+            serverManager.run();
         } catch (Exception e) {
             logger.error("An error occured in the main proccess", e);
         }

@@ -13,7 +13,7 @@ public class ApplicationLogger {
     private String identifier;
 
     public enum ApplicationLoggerLevel {
-        INFO, ERROR;
+        INFO, ERROR, WARN;
     }
 
     //PRIVATE METHODS
@@ -65,6 +65,10 @@ public class ApplicationLogger {
 
     public void info(String message) {
         System.out.println(getLogString(ApplicationLoggerLevel.INFO, message));
+    }
+
+    public void warn(String message) {
+        System.out.println(getLogString(ApplicationLoggerLevel.WARN, message));
     }
 
 }
