@@ -56,7 +56,7 @@ public class ClientHandler extends Thread {
             logger.error("Failed to open client input stream reader", e);
             return requestBuffer;
         }
-
+        //TODO: add timeout on listen
         BufferedReader bufferedReader = new BufferedReader(clientInputStreamReader);
         try {
             int contentLength = 0;
