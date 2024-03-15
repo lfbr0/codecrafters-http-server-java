@@ -92,11 +92,11 @@ public class ClientHandler extends Thread {
             HttpRequest request = new HttpRequest(requestBuffer);
 
             if (!request.isValid()) {
-                responseBuffer.append(HttpUtils.HTTP_400_RESPONSE);
+                responseBuffer.append(HttpUtils.HTTP_BAD_REQUEST_RESPONSE);
             }
             else {
                 if (request.getDesiredPath().equals("/")) {
-                    responseBuffer.append(HttpUtils.HTTP_200_RESPONSE);
+                    responseBuffer.append(HttpUtils.HTTP_OK_RESPONSE);
                 }
                 //Echo route
                 else if (request.getDesiredPath().startsWith("/echo")) {
@@ -105,7 +105,7 @@ public class ClientHandler extends Thread {
                             .substring("/echo".length()+1);
 
                     responseBuffer
-                            .append(HttpUtils.HTTP_200_RESPONSE)
+                            .append(HttpUtils.HTTP_OK_RESPONSE)
                             .append(HttpUtils.HTTP_NEW_LINE)
                             .append("Content-Type: text/plain")
                             .append(HttpUtils.HTTP_NEW_LINE)
@@ -116,7 +116,7 @@ public class ClientHandler extends Thread {
                 //For files routes
                 if (request.getDesiredPath().startsWith("/files")) {
                     if (directory == null) {
-                        responseBuffer.append(HttpUtils.HTTP_400_RESPONSE);
+                        responseBuffer.append(HttpUtils.HTTP_BAD_REQUEST_RESPONSE);
                     }
                     else {
                         //Extract file name from URL
@@ -131,7 +131,7 @@ public class ClientHandler extends Thread {
                                             .getFileBytes(directory, filename)
                                             .ifPresentOrElse(fileBytes -> {
                                                 responseBuffer
-                                                        .append(HttpUtils.HTTP_200_RESPONSE)
+                                                        .append(HttpUtils.HTTP_OK_RESPONSE)
                                                         .append(HttpUtils.HTTP_NEW_LINE)
                                                         .append("Content-Type: application/octet-stream")
                                                         .append(HttpUtils.HTTP_NEW_LINE)
@@ -139,16 +139,25 @@ public class ClientHandler extends Thread {
                                                         .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE);
 
                                                 for (byte b : fileBytes) responseBuffer.append((char) b);
-                                            }, () -> responseBuffer.append(HttpUtils.HTTP_500_RESPONSE));
+                                            }, () -> responseBuffer.append(HttpUtils.HTTP_INTERNAL_ERROR_RESPONSE));
                                 }
                                 else {
-                                    responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
+                                    responseBuffer.append(HttpUtils.HTTP_NOT_FOUND_RESPONSE);
                                 }
                                 break;
                             case "POST":
+                                if (request.getRequestBody() != null && request.getRequestBody().length() > 0) {
+                                    logger.info("Request body -> " + request.getRequestBody());
+                                    //TODO
+                                    responseBuffer.append(HttpUtils.HTTP_CREATED_RESPONSE);
+                                }
+                                else {
+                                    logger.warn("Request body is null, invalid request...");
+                                    responseBuffer.append(HttpUtils.HTTP_BAD_REQUEST_RESPONSE);
+                                }
                                 break;
                             default:
-                                responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
+                                responseBuffer.append(HttpUtils.HTTP_NOT_FOUND_RESPONSE);
                                 break;
                         }
                     }
@@ -158,7 +167,7 @@ public class ClientHandler extends Thread {
                     String headerValue = request.getHeaderFromRoute().get();
 
                     responseBuffer
-                            .append(HttpUtils.HTTP_200_RESPONSE)
+                            .append(HttpUtils.HTTP_OK_RESPONSE)
                             .append(HttpUtils.HTTP_NEW_LINE)
                             .append("Content-Type: text/plain")
                             .append(HttpUtils.HTTP_NEW_LINE)
@@ -167,7 +176,7 @@ public class ClientHandler extends Thread {
                             .append(headerValue);
                 }
                 else {
-                    responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
+                    responseBuffer.append(HttpUtils.HTTP_NOT_FOUND_RESPONSE);
                 }
             }
         }
