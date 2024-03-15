@@ -1,5 +1,6 @@
 package log;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,10 +27,13 @@ public class ApplicationLogger {
     }
 
     private String getFormat(ApplicationLoggerLevel level) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        String className = loggedClass.getCanonicalName();
+
         return Optional
                 .ofNullable(identifier)
-                .map(id -> String.format("%s - [%s]:[%s]" , level.name(), loggedClass.getCanonicalName(), id))
-                .orElse(String.format("%s - [%s]", level.name(), loggedClass.getCanonicalName()));
+                .map(id -> String.format("%s [%s] - [%s]:[%s]" , level.name(), currentTime, className, id))
+                .orElse(String.format("%s [%s] - [%s]", level.name(), currentTime, className));
     }
 
     private String getLogString(ApplicationLoggerLevel level, String message) {
