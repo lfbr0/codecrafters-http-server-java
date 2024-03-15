@@ -14,6 +14,7 @@ public class HttpRequest {
     private String desiredPath;
     private String method;
     private boolean isValid = true;
+    private StringBuffer requestBody = null;
 
     public HttpRequest(StringBuffer requestBuffer) {
         String requestText = requestBuffer.toString();
@@ -52,10 +53,20 @@ public class HttpRequest {
             }
             //For headers
             else {
-                String[] header = line.split(HttpUtils.HTTP_HEADER_SEPERATOR, 2);
-                if (header.length == 2) {
-                    headers.put(header[0].trim(), header[1].trim());
+
+                if (line.matches(HttpUtils.HTTP_HEADER_REGEX)) {
+                    String[] header = line.split(HttpUtils.HTTP_HEADER_SEPERATOR, 2);
+                    if (header.length == 2) {
+                        headers.put(header[0].trim(), header[1].trim());
+                    }
                 }
+                else {
+                    if (requestBody == null) {
+                        requestBody = new StringBuffer();
+                    }
+                    requestBody.append(line);
+                }
+
             }
         }
     }
@@ -70,6 +81,10 @@ public class HttpRequest {
 
     public boolean isValid() {
         return isValid;
+    }
+
+    public StringBuffer getRequestBody() {
+        return requestBody;
     }
 
     public Optional<String> getHeaderFromRoute() {
