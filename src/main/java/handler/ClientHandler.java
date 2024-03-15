@@ -157,9 +157,15 @@ public class ClientHandler extends Thread {
                                 break;
                             case "POST":
                                 if (request.getRequestBody() != null && request.getRequestBody().length() > 0) {
-                                    logger.info("Request body -> " + request.getRequestBody());
-                                    //TODO
-                                    responseBuffer.append(HttpUtils.HTTP_CREATED_RESPONSE);
+                                    logger.info("REQUEST_BODY_START$$$" + request.getRequestBody() + "$$$REQUEST_BODY_END");
+                                    try {
+                                        FileSystemUtils.writeToFile(directory, filename, request.getRequestBody());
+                                        responseBuffer.append(HttpUtils.HTTP_CREATED_RESPONSE);
+                                    }
+                                    catch (IOException ex) {
+                                        logger.error("Failed to write to file", ex);
+                                        responseBuffer.append(HttpUtils.HTTP_INTERNAL_ERROR_RESPONSE);
+                                    }
                                 }
                                 else {
                                     logger.warn("Request body is null, invalid request...");

@@ -3,6 +3,7 @@ package filesystem;
 import log.ApplicationLogger;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -46,4 +47,11 @@ public class FileSystemUtils {
             return Optional.empty();
         }
     }
+
+    public static void writeToFile(String directory, String filename, StringBuffer content) throws IOException {
+        Path path = Path.of(directory, filename);
+        logger.info("Writing to file " + path);
+        Files.write(path, content.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
 }
