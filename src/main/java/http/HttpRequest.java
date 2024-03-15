@@ -12,6 +12,7 @@ public class HttpRequest {
     private static final ApplicationLogger logger = ApplicationLogger.getInstance(HttpRequest.class);
     private final Map<String, String> headers;
     private String desiredPath;
+    private String method;
     private boolean isValid = true;
 
     public HttpRequest(StringBuffer requestBuffer) {
@@ -33,8 +34,9 @@ public class HttpRequest {
                     return;
                 }
                 else {
-                    if (!requestParts[0].equalsIgnoreCase("GET")) {
-                        logger.warn("Request is not valid, is not GET request!");
+                    this.method = requestParts[0];
+                    if (!this.method.equalsIgnoreCase("GET") && !this.method.equalsIgnoreCase("POST")) {
+                        logger.warn("Request is not valid, is not GET or POST request!");
                         this.isValid = false;
                         return;
                     }
@@ -60,6 +62,10 @@ public class HttpRequest {
 
     public String getDesiredPath() {
         return desiredPath;
+    }
+
+    public String getMethod() {
+        return method;
     }
 
     public boolean isValid() {

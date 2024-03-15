@@ -67,6 +67,24 @@ public class ClientHandler extends Thread {
                 requestBuffer
                         .append(line)
                         .append(HttpUtils.HTTP_NEW_LINE);
+
+                //If there's a body, keep listening for its bytes
+                int contentLength = 0;
+                if (line.startsWith("Content-Length: ")) {
+                    contentLength = Integer.parseInt(line.substring("Content-Length: ".length()));
+                }
+
+                //Read body
+                if (contentLength > 0 && !line.matches(HttpUtils.HTTP_HEADER_REGEX)) {
+                    int readChars = 0;
+                    char[] bodyChars = new char[contentLength];
+                    while (readChars < contentLength) {
+                        int result = bufferedReader.read(bodyChars, readChars, contentLength - readChars);
+                        if (result == -1) break; // EOF
+                        readChars += result;
+                    }
+                    requestBuffer.append(bodyChars);
+                }
             }
         } catch (IOException e) {
             logger.error("Failed to read input stream from client", e);
@@ -76,6 +94,7 @@ public class ClientHandler extends Thread {
         return requestBuffer;
     }
 
+
     private StringBuffer getResponseBuffer(StringBuffer requestBuffer) {
         StringBuffer responseBuffer = new StringBuffer(CLIENT_OUTPUT_BUFFER_SIZE);
 
@@ -83,11 +102,11 @@ public class ClientHandler extends Thread {
             HttpRequest request = new HttpRequest(requestBuffer);
 
             if (!request.isValid()) {
-                responseBuffer.append("HTTP/1.1 400 Bad Request");
+                responseBuffer.append(HttpUtils.HTTP_400_RESPONSE);
             }
             else {
                 if (request.getDesiredPath().equals("/")) {
-                    responseBuffer.append("HTTP/1.1 200 OK");
+                    responseBuffer.append(HttpUtils.HTTP_200_RESPONSE);
                 }
                 //Echo route
                 else if (request.getDesiredPath().startsWith("/echo")) {
@@ -96,7 +115,7 @@ public class ClientHandler extends Thread {
                             .substring("/echo".length()+1);
 
                     responseBuffer
-                            .append("HTTP/1.1 200 OK")
+                            .append(HttpUtils.HTTP_200_RESPONSE)
                             .append(HttpUtils.HTTP_NEW_LINE)
                             .append("Content-Type: text/plain")
                             .append(HttpUtils.HTTP_NEW_LINE)
@@ -104,37 +123,49 @@ public class ClientHandler extends Thread {
                             .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
                             .append(echoString);
                 }
-                if (request.getDesiredPath().startsWith("/files") && directory != null) {
-                    String fileToCheck = request.getDesiredPath().substring("/files".length() + 1);
-                    if (FileSystemUtils.fileExists(directory, fileToCheck)) {
+                //For files routes
+                if (request.getDesiredPath().startsWith("/files")) {
+                    if (directory == null) {
+                        responseBuffer.append(HttpUtils.HTTP_400_RESPONSE);
+                    }
+                    else {
+                        //Extract file name from URL
+                        String filename = request
+                                .getDesiredPath()
+                                .substring("/files".length() + 1);
 
-                        //TODO: check this...
-                        FileSystemUtils
-                                .getFileBytes(directory, fileToCheck)
-                                .ifPresentOrElse(fileBytes -> {
-                                    responseBuffer
-                                            .append("HTTP/1.1 200 OK")
-                                            .append(HttpUtils.HTTP_NEW_LINE)
-                                            .append("Content-Type: application/octet-stream")
-                                            .append(HttpUtils.HTTP_NEW_LINE)
-                                            .append("Content-Length: ").append(fileBytes.length)
-                                            .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE);
+                        switch (request.getMethod().toUpperCase()) {
+                            case "GET":
+                                if (FileSystemUtils.fileExists(directory, filename)) {
+                                    FileSystemUtils
+                                            .getFileBytes(directory, filename)
+                                            .ifPresentOrElse(fileBytes -> {
+                                                responseBuffer
+                                                        .append(HttpUtils.HTTP_200_RESPONSE)
+                                                        .append(HttpUtils.HTTP_NEW_LINE)
+                                                        .append("Content-Type: application/octet-stream")
+                                                        .append(HttpUtils.HTTP_NEW_LINE)
+                                                        .append("Content-Length: ").append(fileBytes.length)
+                                                        .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE);
 
-                                    for (byte b : fileBytes) {
-                                        responseBuffer.append((char) b);
-                                    }
-                                }, () -> responseBuffer.append("HTTP/1.1 500 Internal Error"));
-
-                    } else {
-                        responseBuffer.append("HTTP/1.1 404 Not Found");
+                                                for (byte b : fileBytes) responseBuffer.append((char) b);
+                                            }, () -> responseBuffer.append(HttpUtils.HTTP_500_RESPONSE));
+                                }
+                                break;
+                            case "POST":
+                                break;
+                            default:
+                                responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
+                                break;
+                        }
                     }
                 }
-                //Header route
+                //Header routes
                 else if (request.getHeaderFromRoute().isPresent()) {
                     String headerValue = request.getHeaderFromRoute().get();
 
                     responseBuffer
-                            .append("HTTP/1.1 200 OK")
+                            .append(HttpUtils.HTTP_200_RESPONSE)
                             .append(HttpUtils.HTTP_NEW_LINE)
                             .append("Content-Type: text/plain")
                             .append(HttpUtils.HTTP_NEW_LINE)
@@ -143,7 +174,7 @@ public class ClientHandler extends Thread {
                             .append(headerValue);
                 }
                 else {
-                    responseBuffer.append("HTTP/1.1 404 Not Found");
+                    responseBuffer.append(HttpUtils.HTTP_404_RESPONSE);
                 }
             }
         }
@@ -151,6 +182,7 @@ public class ClientHandler extends Thread {
         responseBuffer.append(HttpUtils.HTTP_DELIMITER);
         return responseBuffer;
     }
+
 
     private void sendResponse(StringBuffer response) {
         try (OutputStream outputStream = clientSocket.getOutputStream()){
