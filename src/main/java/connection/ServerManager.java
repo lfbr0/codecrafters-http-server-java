@@ -16,15 +16,17 @@ public class ServerManager {
 
     private final int port;
     private final ExecutorService taskpool;
+    private final int clientSocketTimeoutMs;
     private ServerSocket serverSocket;
     private String directory;
     private AtomicBoolean closeFlag;
 
-    public ServerManager(int port, ExecutorService taskpool) {
+    public ServerManager(int port, ExecutorService taskpool, int clientSocketTimeoutMs) {
         this.port = port;
         this.taskpool = taskpool;
         this.serverSocket = null;
         this.closeFlag = new AtomicBoolean(false);
+        this.clientSocketTimeoutMs = clientSocketTimeoutMs;
     }
 
     public void setDirectory(String directory) {
@@ -41,7 +43,7 @@ public class ServerManager {
             Socket clientSocket = serverSocket.accept();
             logger.info("Got connection -> " + clientSocket);
             clientSocket.setKeepAlive(false);
-            taskpool.submit(new ClientHandler(clientSocket, directory));
+            taskpool.submit(new ClientHandler(clientSocket, directory, clientSocketTimeoutMs));
         }
 
         if (!serverSocket.isClosed()) {

@@ -7,6 +7,7 @@ import log.ApplicationLogger;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 public class ClientHandler extends Thread {
@@ -16,10 +17,12 @@ public class ClientHandler extends Thread {
     private final ApplicationLogger logger;
     private final Socket clientSocket;
     private final String directory;
+    private final int timeoutMs;
 
-    public ClientHandler(Socket clientSocket, String directory) {
+    public ClientHandler(Socket clientSocket, String directory, int timeoutMs) {
         this.directory = directory;
         this.clientSocket = clientSocket;
+        this.timeoutMs = timeoutMs;
         this.logger = ApplicationLogger.getPrototypeInstance(
                 ClientHandler.class,
                 clientSocket.getRemoteSocketAddress().toString()
@@ -48,6 +51,13 @@ public class ClientHandler extends Thread {
 
     private StringBuffer getRequestBuffer() {
         StringBuffer requestBuffer = new StringBuffer(CLIENT_INPUT_BUFFER_SIZE);
+
+        //Set socket data timeout
+        try {
+            clientSocket.setSoTimeout(timeoutMs);
+        } catch (SocketException ex) {
+            logger.error("Failed to set socket timeout of " + timeoutMs + " ms.", ex);
+        }
 
         InputStreamReader clientInputStreamReader;
         try {
