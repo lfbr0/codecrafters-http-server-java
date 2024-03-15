@@ -121,7 +121,7 @@ public class ClientHandler extends Thread {
                                             .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE);
 
                                     for (byte b : fileBytes) {
-                                        responseBuffer.append(b);
+                                        responseBuffer.append((char) b);
                                     }
                                 }, () -> responseBuffer.append("HTTP/1.1 500 Internal Error"));
 
