@@ -59,17 +59,25 @@ public class ClientHandler extends Thread {
 
         BufferedReader bufferedReader = new BufferedReader(clientInputStreamReader);
         try {
-            for (
-                    String line = bufferedReader.readLine();
-                    line != null && !line.equals(HttpUtils.HTTP_DELIMITER) && !line.isEmpty();
-                    line = bufferedReader.readLine()
-            ) {
-                requestBuffer
-                        .append(line)
-                        .append(HttpUtils.HTTP_NEW_LINE);
+            int contentLength = 0;
+
+            for (String line = bufferedReader.readLine(); line != null && !line.isEmpty(); line = bufferedReader.readLine()) {
+                requestBuffer.append(line).append(HttpUtils.HTTP_NEW_LINE);
+
+                if (line.contains("Content-Length")) {
+                    contentLength = Integer.parseInt(line.split(":")[1].trim());
+                }
             }
-        } catch (IOException e) {
-            logger.error("Failed to read input stream from client", e);
+
+            //if it has request body, also append it
+            if (contentLength > 0) {
+                char[] contentBody = new char[contentLength];
+                int read = bufferedReader.read(contentBody, 0, contentLength);
+                logger.info("Read " + read + " bytes from request body...");
+                requestBuffer.append(contentBody);
+            }
+        } catch (IOException ex) {
+            logger.error("Failed to read content", ex);
             return requestBuffer;
         }
 
