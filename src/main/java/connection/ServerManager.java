@@ -2,13 +2,11 @@ package connection;
 
 import handler.ClientHandler;
 import log.ApplicationLogger;
-import misc.TupleSet;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,10 +36,14 @@ public class ServerManager implements AutoCloseable {
         while (!serverSocket.isClosed()) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                if ( !activeConnectionsSet.contains(socketToSetKey(clientSocket)) ) {
+                String socketKey = socketToSetKey(clientSocket);
+                logger.info("Checking if connection for socket key is unique -> " + socketKey);
+
+                if ( !activeConnectionsSet.contains(socketKey) ) {
                     logger.info("Got connection -> " + clientSocket);
                     clientSocket.setKeepAlive(false);
                     taskpool.submit(new ClientHandler(clientSocket, directory));
+                    activeConnectionsSet.add(socketKey);
                 }
             } catch (SocketException ex) {
                 logger.warn("Got socket exception -> " + ex.getMessage());
@@ -50,9 +52,7 @@ public class ServerManager implements AutoCloseable {
     }
 
     private String socketToSetKey(Socket socket) {
-        String socketKey = socket.getRemoteSocketAddress() + ":" + socket.getPort();
-        logger.info("Socket key -> " + socketKey);
-        return socketKey;
+        return socket.getRemoteSocketAddress() + ":" + socket.getPort();
     }
 
     @Override
