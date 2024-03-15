@@ -80,8 +80,23 @@ public class ClientHandler extends Thread {
         if (requestBuffer != null) {
             HttpRequest request = new HttpRequest(requestBuffer);
 
-            if (request.getDesiredPath().equalsIgnoreCase("/")) {
+            if (request.getDesiredPath().equals("/")) {
                 responseBuffer.append("HTTP/1.1 200 OK");
+            }
+            else if (request.getDesiredPath().startsWith("/echo")) {
+
+                String echoString = request
+                        .getDesiredPath()
+                        .substring("/echo".length()+1);
+
+                responseBuffer
+                        .append("HTTP/1.1 200 OK")
+                        .append(HttpUtils.HTTP_NEW_LINE)
+                        .append("Content-Type: text/plain")
+                        .append(HttpUtils.HTTP_NEW_LINE)
+                        .append("Content-Length: ").append(echoString.length())
+                        .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
+                        .append(echoString);
             } else {
                 responseBuffer.append("HTTP/1.1 404 Not Found");
             }
@@ -96,6 +111,7 @@ public class ClientHandler extends Thread {
         try (OutputStream outputStream = clientSocket.getOutputStream()){
             if (response != null) {
                 String responseContent = response.toString();
+                logger.info("RESPONSE_START$$$\n" + responseContent + "\n$$$RESPONSE_END\n");
                 outputStream.write(responseContent.getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
