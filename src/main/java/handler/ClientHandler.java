@@ -107,6 +107,8 @@ public class ClientHandler extends Thread {
                 if (request.getDesiredPath().startsWith("/files") && directory != null) {
                     String fileToCheck = request.getDesiredPath().substring("/files".length() + 1);
                     if (FileSystemUtils.fileExists(directory, fileToCheck)) {
+
+                        //TODO: check this...
                         FileSystemUtils
                                 .getFileBytes(directory, fileToCheck)
                                 .ifPresentOrElse(fileBytes -> {
@@ -122,6 +124,7 @@ public class ClientHandler extends Thread {
                                         responseBuffer.append(b);
                                     }
                                 }, () -> responseBuffer.append("HTTP/1.1 500 Internal Error"));
+
                     } else {
                         responseBuffer.append("HTTP/1.1 404 Not Found");
                     }
