@@ -1,7 +1,5 @@
 package log;
 
-import handler.ClientHandler;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +11,7 @@ public class ApplicationLogger {
     private String identifier;
 
     public enum ApplicationLoggerLevel {
-        INFO, ERROR, WARN;
+        INFO, ERROR, WARN
     }
 
     //PRIVATE METHODS

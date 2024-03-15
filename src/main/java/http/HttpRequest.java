@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 public class HttpRequest {
 
     private static final ApplicationLogger logger = ApplicationLogger.getInstance(HttpRequest.class);
-    private Map<String, String> headers;
+    private final Map<String, String> headers;
     private String desiredPath;
     private boolean isValid = true;
 
@@ -60,6 +60,10 @@ public class HttpRequest {
 
     public String getDesiredPath() {
         return desiredPath;
+    }
+
+    public boolean isValid() {
+        return isValid;
     }
 
     public Optional<String> getHeaderFromRoute() {

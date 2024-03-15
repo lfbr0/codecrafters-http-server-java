@@ -7,7 +7,6 @@ import log.ApplicationLogger;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 public class ClientHandler extends Thread {
 
@@ -47,7 +46,7 @@ public class ClientHandler extends Thread {
     private StringBuffer getRequestBuffer() {
         StringBuffer requestBuffer = new StringBuffer(CLIENT_INPUT_BUFFER_SIZE);
 
-        InputStreamReader clientInputStreamReader = null;
+        InputStreamReader clientInputStreamReader;
         try {
             clientInputStreamReader = new InputStreamReader(clientSocket.getInputStream());
         } catch (IOException e) {
@@ -80,41 +79,45 @@ public class ClientHandler extends Thread {
         if (requestBuffer != null) {
             HttpRequest request = new HttpRequest(requestBuffer);
 
-            if (request.getDesiredPath().equals("/")) {
-                responseBuffer.append("HTTP/1.1 200 OK");
-            }
-            //Echo route
-            else if (request.getDesiredPath().startsWith("/echo")) {
-                String echoString = request
-                        .getDesiredPath()
-                        .substring("/echo".length()+1);
-
-                responseBuffer
-                        .append("HTTP/1.1 200 OK")
-                        .append(HttpUtils.HTTP_NEW_LINE)
-                        .append("Content-Type: text/plain")
-                        .append(HttpUtils.HTTP_NEW_LINE)
-                        .append("Content-Length: ").append(echoString.length())
-                        .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
-                        .append(echoString);
-            }
-            //Header route
-            if (request.getHeaderFromRoute().isPresent()) {
-                String headerValue = request.getHeaderFromRoute().get();
-
-                responseBuffer
-                        .append("HTTP/1.1 200 OK")
-                        .append(HttpUtils.HTTP_NEW_LINE)
-                        .append("Content-Type: text/plain")
-                        .append(HttpUtils.HTTP_NEW_LINE)
-                        .append("Content-Length: ").append(headerValue.length())
-                        .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
-                        .append(headerValue);
+            if (!request.isValid()) {
+                responseBuffer.append("HTTP/1.1 400 Bad Request");
             }
             else {
-                responseBuffer.append("HTTP/1.1 404 Not Found");
-            }
+                if (request.getDesiredPath().equals("/")) {
+                    responseBuffer.append("HTTP/1.1 200 OK");
+                }
+                //Echo route
+                else if (request.getDesiredPath().startsWith("/echo")) {
+                    String echoString = request
+                            .getDesiredPath()
+                            .substring("/echo".length()+1);
 
+                    responseBuffer
+                            .append("HTTP/1.1 200 OK")
+                            .append(HttpUtils.HTTP_NEW_LINE)
+                            .append("Content-Type: text/plain")
+                            .append(HttpUtils.HTTP_NEW_LINE)
+                            .append("Content-Length: ").append(echoString.length())
+                            .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
+                            .append(echoString);
+                }
+                //Header route
+                if (request.getHeaderFromRoute().isPresent()) {
+                    String headerValue = request.getHeaderFromRoute().get();
+
+                    responseBuffer
+                            .append("HTTP/1.1 200 OK")
+                            .append(HttpUtils.HTTP_NEW_LINE)
+                            .append("Content-Type: text/plain")
+                            .append(HttpUtils.HTTP_NEW_LINE)
+                            .append("Content-Length: ").append(headerValue.length())
+                            .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
+                            .append(headerValue);
+                }
+                else {
+                    responseBuffer.append("HTTP/1.1 404 Not Found");
+                }
+            }
         }
         
         responseBuffer.append(HttpUtils.HTTP_DELIMITER);

@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
-    public static int HTTP_DEFAULT_PORT = 4221;
+    public static final int HTTP_DEFAULT_PORT = 4221;
 
     private static final ApplicationLogger logger = ApplicationLogger.getInstance(Main.class);
 
