@@ -51,7 +51,9 @@ public class HttpRequest {
             //For headers
             else {
                 String[] header = line.split(HttpUtils.HTTP_HEADER_SEPERATOR, 2);
-                headers.put(header[0], header[1]);
+                if (header.length == 2) {
+                    headers.put(header[0].trim(), header[1].trim());
+                }
             }
         }
     }
