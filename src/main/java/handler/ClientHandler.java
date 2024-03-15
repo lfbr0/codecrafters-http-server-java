@@ -67,24 +67,6 @@ public class ClientHandler extends Thread {
                 requestBuffer
                         .append(line)
                         .append(HttpUtils.HTTP_NEW_LINE);
-
-                //If there's a body, keep listening for its bytes
-                int contentLength = 0;
-                if (line.startsWith("Content-Length: ")) {
-                    contentLength = Integer.parseInt(line.substring("Content-Length: ".length()));
-                }
-
-                //Read body
-                if (contentLength > 0 && !line.matches(HttpUtils.HTTP_HEADER_REGEX)) {
-                    int readChars = 0;
-                    char[] bodyChars = new char[contentLength];
-                    while (readChars < contentLength) {
-                        int result = bufferedReader.read(bodyChars, readChars, contentLength - readChars);
-                        if (result == -1) break; // EOF
-                        readChars += result;
-                    }
-                    requestBuffer.append(bodyChars);
-                }
             }
         } catch (IOException e) {
             logger.error("Failed to read input stream from client", e);
