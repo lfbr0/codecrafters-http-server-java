@@ -83,8 +83,8 @@ public class ClientHandler extends Thread {
             if (request.getDesiredPath().equals("/")) {
                 responseBuffer.append("HTTP/1.1 200 OK");
             }
+            //Echo route
             else if (request.getDesiredPath().startsWith("/echo")) {
-
                 String echoString = request
                         .getDesiredPath()
                         .substring("/echo".length()+1);
@@ -97,7 +97,21 @@ public class ClientHandler extends Thread {
                         .append("Content-Length: ").append(echoString.length())
                         .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
                         .append(echoString);
-            } else {
+            }
+            //Header route
+            if (request.getHeaderFromRoute().isPresent()) {
+                String headerValue = request.getHeaderFromRoute().get();
+
+                responseBuffer
+                        .append("HTTP/1.1 200 OK")
+                        .append(HttpUtils.HTTP_NEW_LINE)
+                        .append("Content-Type: text/plain")
+                        .append(HttpUtils.HTTP_NEW_LINE)
+                        .append("Content-Length: ").append(headerValue.length())
+                        .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
+                        .append(headerValue);
+            }
+            else {
                 responseBuffer.append("HTTP/1.1 404 Not Found");
             }
 

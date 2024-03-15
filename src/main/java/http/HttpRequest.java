@@ -4,6 +4,7 @@ import log.ApplicationLogger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 public class HttpRequest {
@@ -55,12 +56,17 @@ public class HttpRequest {
         }
     }
 
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
     public String getDesiredPath() {
         return desiredPath;
+    }
+
+    public Optional<String> getHeaderFromRoute() {
+        return headers
+                .keySet()
+                .stream()
+                .filter(header -> header.equalsIgnoreCase(desiredPath.substring(1)))
+                .findFirst()
+                .map(headers::get);
     }
 
 }
