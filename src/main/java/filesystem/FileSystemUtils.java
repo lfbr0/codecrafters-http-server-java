@@ -2,6 +2,9 @@ package filesystem;
 
 import log.ApplicationLogger;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class FileSystemUtils {
 
     private static final ApplicationLogger logger = ApplicationLogger.getInstance(FileSystemUtils.class);
@@ -18,7 +21,9 @@ public class FileSystemUtils {
         }
 
         logger.info("Checking if file " + fileToCheck + " exists in dir " + directory);
-        return true;
+        Path path = Path.of(directory, fileToCheck);
+        logger.info("Path -> " + path);
+        return Files.exists(path);
     }
 
 }
