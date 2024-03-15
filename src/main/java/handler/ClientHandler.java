@@ -76,7 +76,7 @@ public class ClientHandler extends Thread {
     private StringBuffer getResponseBuffer(StringBuffer requestBuffer) {
         StringBuffer responseBuffer = new StringBuffer(CLIENT_OUTPUT_BUFFER_SIZE);
 
-        if (requestBuffer != null) {
+        if (requestBuffer != null && requestBuffer.length() > 0) {
             HttpRequest request = new HttpRequest(requestBuffer);
 
             if (!request.isValid()) {
