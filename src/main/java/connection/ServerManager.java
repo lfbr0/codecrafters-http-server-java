@@ -36,7 +36,7 @@ public class ServerManager implements AutoCloseable {
         while (!serverSocket.isClosed()) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                String socketKey = socketToSetKey(clientSocket);
+                String socketKey = clientSocket.getRemoteSocketAddress().toString();
                 logger.info("Checking if connection for socket key is unique -> " + socketKey);
 
                 if ( !activeConnectionsSet.contains(socketKey) ) {
@@ -49,10 +49,6 @@ public class ServerManager implements AutoCloseable {
                 logger.warn("Got socket exception -> " + ex.getMessage());
             }
         }
-    }
-
-    private String socketToSetKey(Socket socket) {
-        return socket.getRemoteSocketAddress() + ":" + socket.getPort();
     }
 
     @Override
