@@ -17,6 +17,11 @@ public class Main {
             final ExecutorService threadpool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             ServerManager serverManager = new ServerManager(HTTP_DEFAULT_PORT, threadpool);
 
+            //For directory set...
+            if (args.length == 2 && args[0].equalsIgnoreCase("--directory")) {
+                serverManager.setDirectory(args[1]);
+            }
+
             //Add callback in case of closing
             Runtime.getRuntime().addShutdownHook(new MainShutdownHandler(serverManager, threadpool));
 

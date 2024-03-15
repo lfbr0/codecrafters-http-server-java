@@ -15,6 +15,7 @@ public class ServerManager implements AutoCloseable {
     private final int port;
     private final ExecutorService taskpool;
     private ServerSocket serverSocket;
+    private String directory;
 
     public ServerManager(int port, ExecutorService taskpool) {
         this.port = port;
@@ -30,7 +31,7 @@ public class ServerManager implements AutoCloseable {
             Socket clientSocket = serverSocket.accept();
             logger.info("Got connection -> " + clientSocket);
             clientSocket.setKeepAlive(false);
-            taskpool.submit(new ClientHandler(clientSocket));
+            taskpool.submit(new ClientHandler(clientSocket, directory));
         }
     }
 
@@ -42,4 +43,8 @@ public class ServerManager implements AutoCloseable {
         }
     }
 
+    public void setDirectory(String directory) {
+        logger.info("Setting directory of server as " + directory);
+        this.directory = directory;
+    }
 }

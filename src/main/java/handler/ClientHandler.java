@@ -1,5 +1,6 @@
 package handler;
 
+import filesystem.FileSystemUtils;
 import http.HttpRequest;
 import http.HttpUtils;
 import log.ApplicationLogger;
@@ -14,8 +15,10 @@ public class ClientHandler extends Thread {
     private static final int CLIENT_OUTPUT_BUFFER_SIZE = 16000;
     private final ApplicationLogger logger;
     private final Socket clientSocket;
+    private final String directory;
 
-    public ClientHandler(Socket clientSocket) {
+    public ClientHandler(Socket clientSocket, String directory) {
+        this.directory = directory;
         this.clientSocket = clientSocket;
         this.logger = ApplicationLogger.getPrototypeInstance(
                 ClientHandler.class,
@@ -101,8 +104,21 @@ public class ClientHandler extends Thread {
                             .append(HttpUtils.HTTP_NEW_LINE).append(HttpUtils.HTTP_NEW_LINE)
                             .append(echoString);
                 }
+                if (request.getDesiredPath().startsWith("/files") && directory != null) {
+                    String fileToCheck = request.getDesiredPath().substring("/files".length() + 1);
+                    if (FileSystemUtils.fileExists(directory, fileToCheck)) {
+                        responseBuffer
+                                .append("HTTP/1.1 200 OK")
+                                .append(HttpUtils.HTTP_NEW_LINE)
+                                .append("Content-Type: application/octet-stream")
+                                .append(HttpUtils.HTTP_NEW_LINE);
+                        //TODO: read contents and append to buffer along with content length
+                    } else {
+                        responseBuffer.append("HTTP/1.1 404 Not Found");
+                    }
+                }
                 //Header route
-                if (request.getHeaderFromRoute().isPresent()) {
+                else if (request.getHeaderFromRoute().isPresent()) {
                     String headerValue = request.getHeaderFromRoute().get();
 
                     responseBuffer
