@@ -5,6 +5,7 @@ import logger.ApplicationLoggerFactory;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class ClientHandler implements Runnable {
 
@@ -21,6 +22,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
+            this.socket.getOutputStream().write("HTTP/1.1 200 OK\r\n\r\n".getBytes(StandardCharsets.UTF_8));
             this.socket.close();
         }
         catch (Exception ex) {
