@@ -1,17 +1,23 @@
 package http.models;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 
 import static java.lang.String.format;
 
 @Builder
+@Getter
 public class HttpResponse {
 
     private int statusCode;
     private String statusText;
+
+    @Setter
     private StringBuffer body;
+
     private Map<String, String> headers;
 
     @Override
@@ -35,6 +41,10 @@ public class HttpResponse {
         return responseBuffer
                 .append("\r\n")
                 .toString();
+    }
+
+    public void putHeader(String key, String value) {
+        headers.put(key, value);
     }
 
 }

@@ -1,5 +1,6 @@
 package http.handler;
 
+import http.middleware.EncodingMiddleware;
 import http.models.HttpRequest;
 import http.models.HttpResponse;
 import logger.ApplicationLogger;
@@ -15,6 +16,7 @@ public class ClientHandler implements Runnable {
     private final ApplicationLogger instanceLogger;
     private final Socket socket;
     private final String workingDirectory;
+    private final EncodingMiddleware encodingMiddleware;
 
     public ClientHandler(Socket socket, String workingDirectory) {
         this.instanceLogger = ApplicationLoggerFactory.getLogger(
@@ -22,6 +24,7 @@ public class ClientHandler implements Runnable {
         );
         this.socket = socket;
         this.workingDirectory = workingDirectory;
+        this.encodingMiddleware = new EncodingMiddleware();
     }
 
     @Override
@@ -36,7 +39,12 @@ public class ClientHandler implements Runnable {
 
             //If not valid request, end it here.
             if (!httpRequest.isValidRequest()) {
-                //TODO: 400 bad request
+                answerRequestWithError(
+                        "Request is not valid",
+                        400,
+                        "Bad Request",
+                        httpRequest
+                );
                 return;
             }
 
@@ -50,26 +58,41 @@ public class ClientHandler implements Runnable {
 
             //If not a valid request handler, than something went very very wrong
             if (requestHandler == null) {
-                //TODO: 400 bad request
+                answerRequestWithError(
+                        "Failed to determine request handler",
+                        500,
+                        "Internal Server Error",
+                        httpRequest
+                );
                 return;
             }
 
             //Process request & retrieve response
             httpResponse = requestHandler.handleRequest(httpRequest);
 
+            //Apply encoding middleware
+            encodingMiddleware.applyMiddleware(httpRequest, httpResponse);
+
             //Finally answer request with http response
             answerRequest(httpResponse);
         }
         catch (Exception ex) {
-            this.instanceLogger.error("Failed to handle/process HTTP client", ex);
+            ex.printStackTrace();
+            answerRequestWithError(
+                    "Failed to handle/process HTTP client\n" + ex.getMessage(),
+                    500,
+                    "Internal Server Error",
+                    null
+            );
         }
     }
+
 
     private void answerRequest(HttpResponse httpResponse) {
         instanceLogger.info(
                 "Finalizing request for instance " +
-                instanceLogger.getInstanceName() +
-                " with response " + httpResponse
+                        instanceLogger.getInstanceName() +
+                        " with response " + httpResponse
         );
 
         try {
@@ -85,6 +108,17 @@ public class ClientHandler implements Runnable {
         } catch (IOException ex) {
             instanceLogger.error("Failed to answer request with response to client", ex);
         }
+    }
+
+    private void answerRequestWithError(String message, int statusCode, String statusText, HttpRequest httpRequest) {
+        instanceLogger.error(message + (httpRequest != null ? "\n" + httpRequest : ""));
+        answerRequest(
+                HttpResponse
+                        .builder()
+                        .statusCode(statusCode)
+                        .statusText(statusText)
+                        .build()
+        );
     }
 
 }
