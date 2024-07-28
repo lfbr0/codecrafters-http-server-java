@@ -1,15 +1,21 @@
 package http.handler;
 
+import filesystem.FileManager;
 import http.models.HttpRequest;
 import http.models.HttpResponse;
+import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@RequiredArgsConstructor
 public class GetHttpRequestHandler implements GenericHttpRequestHandler {
 
+    private final String workingDirectory;
+
     @Override
-    public HttpResponse handleRequest(HttpRequest request) {
+    public HttpResponse handleRequest(HttpRequest request) throws IOException {
         String path = request.getPath();
         HttpResponse httpResponse;
 
@@ -22,7 +28,11 @@ public class GetHttpRequestHandler implements GenericHttpRequestHandler {
         }
         else if (path.startsWith("/user-agent")) {
             httpResponse = handleUserAgentPathRequest(request);
-        } else {
+        }
+        else if (path.startsWith("/files/")) {
+            httpResponse = handleFilesPathRequest(request);
+        }
+        else {
             httpResponse = handleNotFoundPathRequest(request);
         }
 
@@ -31,6 +41,43 @@ public class GetHttpRequestHandler implements GenericHttpRequestHandler {
 
 
     /** HANDLER METHODS **/
+
+    private HttpResponse handleFilesPathRequest(HttpRequest request) throws IOException {
+        /**
+         * 1. get instance of file manager
+         * 2. get filename from request
+         * 3. check if it exists
+         * 3.1. if not exists, return 404
+         * 3.2. if exists, read file content into byte array and place onto object
+         */
+        FileManager fileManager = FileManager.getInstance(workingDirectory);
+        String filename = request
+                .getPath()
+                .substring("/files/".length());
+
+        if (!fileManager.fileExists(filename)) {
+            return handleNotFoundPathRequest(request);
+        }
+
+        //Place file content onto buffer
+        int fileBytes = fileManager.getFileLength(filename);
+        StringBuffer fileContentBuffer = new StringBuffer(fileBytes);
+        for (byte fileByte : fileManager.getFileContent(filename)) {
+            fileContentBuffer.append((char) fileByte);
+        }
+
+        //Create response headers
+        Map<String, String> responseHeaders = new HashMap<>();
+        responseHeaders.put("Content-Type", "application/octet-stream");
+        responseHeaders.put("Content-Length", Integer.toString(fileBytes));
+
+        return HttpResponse.builder()
+                .statusCode(200)
+                .statusText("OK")
+                .headers(responseHeaders)
+                .body(fileContentBuffer)
+                .build();
+    }
 
     private HttpResponse handleUserAgentPathRequest(HttpRequest request) {
         //Get user agent value or nothing if no header present

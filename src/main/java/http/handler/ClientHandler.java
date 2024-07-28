@@ -14,12 +14,14 @@ public class ClientHandler implements Runnable {
 
     private final ApplicationLogger instanceLogger;
     private final Socket socket;
+    private final String workingDirectory;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, String workingDirectory) {
         this.instanceLogger = ApplicationLoggerFactory.getLogger(
                 socket.getInetAddress().getHostAddress() + ":" + socket.getPort()
         );
         this.socket = socket;
+        this.workingDirectory = workingDirectory;
     }
 
     @Override
@@ -42,7 +44,7 @@ public class ClientHandler implements Runnable {
             HttpResponse httpResponse;
             GenericHttpRequestHandler requestHandler = null;
             switch (httpRequest.getMethod()) {
-                case GET -> requestHandler = new GetHttpRequestHandler();
+                case GET -> requestHandler = new GetHttpRequestHandler(workingDirectory);
             }
 
             //If not a valid request handler, than something went very very wrong

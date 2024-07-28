@@ -24,8 +24,10 @@ public class CodecraftersHttpServer {
     private final double scalingFactor;
     private final ExecutorService executorService;
     private final AtomicBoolean shutdownFlagAtomicReference;
+    private final String workingDirectory;
 
-    public CodecraftersHttpServer() throws IOException {
+    public CodecraftersHttpServer(String workingDirectory) throws IOException {
+        this.workingDirectory = workingDirectory;
         this.serverSocket = new ServerSocket(HTTP_PORT);
         this.scalingFactor = DEFAULT_SCALING_FACTOR;
         this.executorService = Executors.newFixedThreadPool((int) (getRuntime().availableProcessors() * scalingFactor));
@@ -39,7 +41,7 @@ public class CodecraftersHttpServer {
         while (!this.shutdownFlagAtomicReference.getAcquire()) {
             Socket clientSocket = this.serverSocket.accept();
             logger.info("Accepting client connection -> " + clientSocket.getInetAddress());
-            this.executorService.submit(new ClientHandler(clientSocket));
+            this.executorService.submit(new ClientHandler(clientSocket, workingDirectory));
         }
         
         logger.info("Shutting down HTTP server since shutdown flag is activated");
