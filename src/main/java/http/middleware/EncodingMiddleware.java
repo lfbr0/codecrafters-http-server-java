@@ -8,6 +8,8 @@ import http.models.HttpResponse;
 import logger.ApplicationLogger;
 import logger.ApplicationLoggerFactory;
 
+import java.util.List;
+
 public class EncodingMiddleware implements GenericMiddleware {
 
     private static final ApplicationLogger logger = ApplicationLoggerFactory.getLogger(EncodingMiddleware.class);
@@ -17,11 +19,12 @@ public class EncodingMiddleware implements GenericMiddleware {
         //This middleware will only do something if request has Accept-Encoding header
         httpRequest
                 .getHeader("Accept-Encoding")
-                .ifPresent(encodingScheme -> {
-                    logger.info("User specifies encoding scheme " + encodingScheme);
+                .map(encodingSchemesRawString -> List.of(encodingSchemesRawString.split(",")))
+                .ifPresent(encodingSchemes -> {
+                    logger.info("User specifies encoding scheme(s) " + encodingSchemes);
                     GenericEncoder encoder;
 
-                    if (encodingScheme.equalsIgnoreCase("gzip")) {
+                    if (encodingSchemes.contains("gzip")) {
                         encoder = new GzipEncoder();
                         httpResponse.putHeader("Content-Encoding", "gzip");
                     }
