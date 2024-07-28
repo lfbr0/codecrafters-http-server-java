@@ -5,16 +5,16 @@ import http.models.HttpResponse;
 
 public interface GenericHttpRequestHandler {
 
-    public HttpResponse handleRequest(HttpRequest request);
+    HttpResponse handleRequest(HttpRequest request);
 
-    public default HttpResponse handleNotFoundPathRequest(HttpRequest request) {
+    default HttpResponse handleNotFoundPathRequest(HttpRequest request) {
         return HttpResponse.builder()
                 .statusCode(404)
                 .statusText("Not Found")
                 .build();
     }
 
-    public default HttpResponse handleNotFoundPathRequest() {
+    default HttpResponse handleNotFoundPathRequest() {
         return handleNotFoundPathRequest(null);
     }
 

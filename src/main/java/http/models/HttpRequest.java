@@ -1,6 +1,5 @@
 package http.models;
 
-import http.CodecraftersHttpServer;
 import logger.ApplicationLogger;
 import logger.ApplicationLoggerFactory;
 import lombok.Builder;
@@ -111,7 +110,7 @@ public class HttpRequest {
                 char[] buffer = new char[HTTP_BODY_BUFFER_SIZE];
 
                 //Read until content length is reached or end of stream (EOS)
-                int totalRead = 0, read = 0;
+                int totalRead = 0, read;
                 while (totalRead < contentLength) {
                     //Read until buffer size or whatever was read
                     read = reader.read(buffer, 0, Math.min(HTTP_BODY_BUFFER_SIZE, contentLength - totalRead));

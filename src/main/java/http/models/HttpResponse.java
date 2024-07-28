@@ -2,7 +2,6 @@ package http.models;
 
 import lombok.Builder;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.String.format;

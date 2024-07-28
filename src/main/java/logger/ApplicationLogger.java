@@ -2,12 +2,12 @@ package logger;
 
 import lombok.Getter;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 
 import static java.lang.String.format;
 
+@Getter
 public class ApplicationLogger {
 
     //Default format
@@ -18,7 +18,6 @@ public class ApplicationLogger {
     public static final String ANSI_YELLOW = "\u001B[33m";
 
     //Instance object fields
-    @Getter
     private final String instanceName;
 
     public ApplicationLogger(String instanceName) {

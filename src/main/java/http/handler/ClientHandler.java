@@ -39,7 +39,7 @@ public class ClientHandler implements Runnable {
             }
 
             //Determine handler to use according to request method & retrieve processed response
-            HttpResponse httpResponse = null;
+            HttpResponse httpResponse;
             GenericHttpRequestHandler requestHandler = null;
             switch (httpRequest.getMethod()) {
                 case GET -> requestHandler = new GetHttpRequestHandler();

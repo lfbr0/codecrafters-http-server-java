@@ -5,14 +5,13 @@ import http.models.HttpResponse;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class GetHttpRequestHandler implements GenericHttpRequestHandler {
 
     @Override
     public HttpResponse handleRequest(HttpRequest request) {
         String path = request.getPath();
-        HttpResponse httpResponse = null;
+        HttpResponse httpResponse;
 
         //According to path, determine handling method & response
         if (path.equals("/")) {
