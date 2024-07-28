@@ -15,8 +15,36 @@
         <java.version>21</java.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
+            <!-- Compiler plugin for setting up annotation processing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version> <!-- Make sure to use a recent version -->
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.34</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Assembly plugin for building the final jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -35,7 +63,6 @@
                     </archive>
                     <outputDirectory>${dir}</outputDirectory>
                 </configuration>
-
                 <executions>
                     <execution>
                         <id>make-assembly</id>

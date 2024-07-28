@@ -1,12 +1,12 @@
 package http;
 
+import http.handler.ClientHandler;
 import logger.ApplicationLogger;
 import logger.ApplicationLoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
