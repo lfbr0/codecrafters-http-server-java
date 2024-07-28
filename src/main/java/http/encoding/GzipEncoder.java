@@ -45,7 +45,7 @@ public class GzipEncoder implements GenericEncoder {
         byte[] compressedData = byteStream.toByteArray();
         StringBuffer convertedBody = new StringBuffer(compressedData.length);
         for (byte compressedByte : compressedData) {
-            convertedBody.append((char) compressedByte);
+            convertedBody.append(compressedByte);
         }
 
         return convertedBody;
