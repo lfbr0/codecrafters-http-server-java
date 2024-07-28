@@ -18,7 +18,10 @@ public class HttpResponse {
     @Override
     public String toString() {
         StringBuilder responseBuffer = new StringBuilder();
-        responseBuffer.append(format("HTTP/1.1 %d %s\r\n", statusCode, statusText));
+        responseBuffer
+                .append("HTTP/1.1").append(" ")
+                .append(statusCode).append(" ")
+                .append(statusText).append("\r\n");
 
         if (this.headers != null && !this.headers.isEmpty()) {
             this.headers.forEach((key,value) -> responseBuffer.append(format("%s: %s\r\n", key, value)));
@@ -30,7 +33,9 @@ public class HttpResponse {
             responseBuffer.append("\r\n");
         }
 
-        return responseBuffer.toString();
+        return responseBuffer
+                .append("\r\n")
+                .toString();
     }
 
 }
