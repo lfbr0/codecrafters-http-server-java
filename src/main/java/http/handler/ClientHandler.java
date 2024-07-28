@@ -45,6 +45,7 @@ public class ClientHandler implements Runnable {
             GenericHttpRequestHandler requestHandler = null;
             switch (httpRequest.getMethod()) {
                 case GET -> requestHandler = new GetHttpRequestHandler(workingDirectory);
+                case POST -> requestHandler = new PostHttpRequestHandler(workingDirectory);
             }
 
             //If not a valid request handler, than something went very very wrong
