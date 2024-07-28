@@ -36,10 +36,9 @@ public class GzipEncoder implements GenericEncoder {
 
             // Return the hexadecimal representation
             return hexString;
-
         } catch (IOException ex) {
             logger.error("Failed to convert to gzip output stream", ex);
-            return body; // Return the original body on error
+            return body;
         }
     }
 

@@ -3,8 +3,9 @@ package http.middleware;
 import http.models.HttpRequest;
 import http.models.HttpResponse;
 
+@FunctionalInterface
 public interface GenericMiddleware {
 
-    public void applyMiddleware(HttpRequest httpRequest, HttpResponse httpResponse);
+    void applyMiddleware(HttpRequest httpRequest, HttpResponse httpResponse);
 
 }
