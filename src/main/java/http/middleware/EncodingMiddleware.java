@@ -9,6 +9,7 @@ import logger.ApplicationLogger;
 import logger.ApplicationLoggerFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class EncodingMiddleware implements GenericMiddleware {
 
@@ -19,8 +20,10 @@ public class EncodingMiddleware implements GenericMiddleware {
         //This middleware will only do something if request has Accept-Encoding header
         httpRequest
                 .getHeader("Accept-Encoding")
-                .map(encodingSchemesRawString -> List.of(encodingSchemesRawString.split(",")))
-                .ifPresent(encodingSchemes -> {
+                .map(encodingSchemesRawString -> Stream.of(encodingSchemesRawString.split(",")))
+                .map(encodingSchemesStream -> encodingSchemesStream.map(String::trim))
+                .ifPresent(encodingSchemesStream -> {
+                    List<String> encodingSchemes = encodingSchemesStream.toList();
                     logger.info("User specifies encoding scheme(s) " + encodingSchemes);
                     GenericEncoder encoder;
 
