@@ -5,6 +5,7 @@ import http.models.HttpResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class GetHttpRequestHandler implements GenericHttpRequestHandler {
 
@@ -20,11 +21,38 @@ public class GetHttpRequestHandler implements GenericHttpRequestHandler {
         else if (path.startsWith("/echo/")) {
             httpResponse = handleEchoPathRequest(request);
         }
-        else {
+        else if (path.startsWith("/user-agent")) {
+            httpResponse = handleUserAgentPathRequest(request);
+        } else {
             httpResponse = handleNotFoundPathRequest(request);
         }
 
         return httpResponse;
+    }
+
+
+    /** HANDLER METHODS **/
+
+    private HttpResponse handleUserAgentPathRequest(HttpRequest request) {
+        //Get user agent value or nothing if no header present
+        String userAgentValue = request
+                .getHeader("User-Agent")
+                .orElse("");
+
+        //Fill headers
+        Map<String, String> responseHeaders = new HashMap<>();
+        responseHeaders.put("Content-Type", "text/plain");
+        responseHeaders.put("Content-Length", Integer.toString(userAgentValue.length()));
+
+        //Place response body
+        StringBuffer responseBody = new StringBuffer(userAgentValue);
+
+        return HttpResponse.builder()
+                .statusCode(200)
+                .statusText("OK")
+                .headers(responseHeaders)
+                .body(responseBody)
+                .build();
     }
 
     private HttpResponse handleEchoPathRequest(HttpRequest request) {
