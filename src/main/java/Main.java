@@ -1,8 +1,11 @@
 import http.CodecraftersHttpServer;
+import http.handler.CodecraftersHttpServerExitHandler;
 import logger.ApplicationLogger;
 import logger.ApplicationLoggerFactory;
 
 import java.io.IOException;
+
+import static java.lang.Runtime.getRuntime;
 
 
 public class Main {
@@ -22,6 +25,11 @@ public class Main {
             logger.info("Setting working directory for HTTP server as " + workingDirectory);
 
             CodecraftersHttpServer server = new CodecraftersHttpServer(workingDirectory);
+
+            //Add shutdown hook for graceful exit
+            getRuntime().addShutdownHook(new CodecraftersHttpServerExitHandler(server));
+
+            //Start server (blocking)
             server.start();
         }
         catch (IOException ex) {

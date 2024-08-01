@@ -44,7 +44,29 @@ public class CodecraftersHttpServer {
             this.executorService.submit(new ClientHandler(clientSocket, workingDirectory));
         }
         
-        logger.info("Shutting down HTTP server since shutdown flag is activated");
+        logger.info("Initiating Shutdown procedure for HTTP server since shutdown flag is activated");
+        shutdown();
+    }
+
+    public void stop() {
+        logger.info("Received shutdown signal, setting shutdown flag as true");
+        this.shutdownFlagAtomicReference.set(true);
+    }
+
+    private void shutdown() {
+        try {
+            if (!this.serverSocket.isClosed()) {
+                logger.info("Closing server socket");
+                this.serverSocket.close();
+            }
+            if (!this.executorService.isShutdown()) {
+                logger.info("Shutting down thread pool");
+                this.executorService.shutdownNow();
+            }
+        }
+        catch (IOException e) {
+            logger.error("Failed to complete shutdown procedure", e);
+        }
     }
 
 }
