@@ -43,17 +43,13 @@ public class CodecraftersHttpServer {
             logger.info("Accepting client connection -> " + clientSocket.getInetAddress());
             this.executorService.submit(new ClientHandler(clientSocket, workingDirectory));
         }
-        
-        logger.info("Initiating Shutdown procedure for HTTP server since shutdown flag is activated");
-        shutdown();
     }
 
     public void stop() {
         logger.info("Received shutdown signal, setting shutdown flag as true");
         this.shutdownFlagAtomicReference.set(true);
-    }
-
-    private void shutdown() {
+        //shutdown procedure
+        logger.info("Initiating Shutdown procedure for HTTP server since shutdown flag is activated");
         try {
             if (!this.serverSocket.isClosed()) {
                 logger.info("Closing server socket");
